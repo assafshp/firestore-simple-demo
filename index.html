@@ -68,7 +68,7 @@
 
         function refresh() {
             deleteAll();
-            db.collection("fl_content").get().then((querySnapshot) => {
+            db.collection("fl_content").orderBy("time").get().then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
                     console.log(`${doc.id} => ${doc.data()}`);
                     const message = doc.data();
