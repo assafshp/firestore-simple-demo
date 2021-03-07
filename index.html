@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+
+    </script>
+</head>
+
+<body>
+    <div>
+        <h1>Agent Messages</h1>
+        <div style="height: 50px;color:blue;"></div>
+
+        <div id='main'>
+            <ul id='messages'></ul>
+        </div>
+        <button onclick="addMessage('זו הודעה לדוגמה');">add demo message</button>
+        <button onclick="refresh();">refresh</button>
+
+        <hr>
+        <h1>Admin</h1>
+        <label>new message:</label><input type="text" id="msg">
+        <button onclick="sendMessage('aaaddd');">send</button>
+
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-app.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script src="https://www.gstatic.com/firebasejs/8.2.10/firebase-firestore.js"></script>
+
+
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyApgXMx8Jgc0jQ4wil0-bF3R6IzKIKhX0U",
+            authDomain: "harel-3d536.firebaseapp.com",
+            databaseURL: "https://harel-3d536.firebaseio.com",
+            projectId: "harel-3d536",
+            storageBucket: "harel-3d536.appspot.com",
+            messagingSenderId: "1060317711426",
+            appId: "1:1060317711426:web:2db8d0afd02493a6d671db"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        var db = firebase.firestore();
+
+
+
+        db.collection("fl_content").orderBy("time")
+            .onSnapshot((querySnapshot) => {
+                deleteAll();
+                var messages = [];
+                querySnapshot.forEach((doc) => {
+                    const msg = doc.data();
+                    messages.push(msg);
+                    addMessage(msg.message, msg.time);
+                });
+                console.log(messages.join(", "));
+
+            });
+
+        function refresh() {
+            deleteAll();
+            db.collection("fl_content").get().then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    console.log(`${doc.id} => ${doc.data()}`);
+                    const message = doc.data();
+                    console.log(message.message);
+                    addMessage(message.message, message.time);
+                });
+            });
+        }
+
+        function deleteAll() {
+            var messaged = document.getElementById("messages");
+            messaged.remove();
+            var node = document.createElement("ul");
+            node.setAttribute("id", "messages");
+
+
+            var maind = document.getElementById("main");
+            maind.appendChild(node);
+        }
+
+
+        function addMessage(message, time) {
+            var text = document.createTextNode(time + ': ' + message),
+                el = document.createElement('li'),
+                messages = document.getElementById('messages');
+            el1 = document.createElement('button');
+            el1.innerHTML = "Delete";
+            el1.setAttribute("onclick", "deleteMe(this.id)");
+            el1.setAttribute("id", time);
+
+
+            el.appendChild(text);
+            el.appendChild(el1);
+            messages.appendChild(el);
+        }
+
+        function sendMessage(message) {
+            const msg = document.getElementById("msg").value;
+            db.collection("fl_content").add({
+                message: msg,
+                time: new Date().getTime() + ''
+            });
+            document.getElementById('msg').value = '';
+        }
+
+        function deleteMe(time) {
+            db.collection('fl_content').where("time", "==", time)
+                .get()
+                .then((querySnapshot) => {
+                    // console.log(querySnapshot.si)
+                    querySnapshot.forEach((doc) => {
+                        // doc.data() is never undefined for query doc snapshots
+                        console.log(doc.id, " => ", doc.data());
+                        doc.ref.delete();
+                        
+                    });
+                })
+
+
+        }
+    </script>
+</body>
+
+</html>
